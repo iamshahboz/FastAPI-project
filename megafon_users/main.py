@@ -3,8 +3,7 @@ from fastapi import FastAPI, Depends, status, Response, HTTPException
 from . import schemas, models
 from .database import engine, SessionLocal
 from sqlalchemy.orm import Session
-from fastapi.encoders import jsonable_encoder
-from typing import List
+
 
 app = FastAPI(
     title="Megafon project API",
@@ -24,14 +23,14 @@ def get_db():
 # CRUD for Subscription model
 # api to get all subscriptions
 @app.get('/subscriptions', status_code=status.HTTP_200_OK, tags=['subscriptions'])
-def all_subscriptions(db: Session = Depends(get_db)):
+async def all_subscriptions(db: Session = Depends(get_db)):
     subscriptions = db.query(models.Subscription).all()
     return subscriptions
 
 
 # api to get the subscription by id
 @app.get('/subscription/{id}', status_code=status.HTTP_200_OK, tags=['subscriptions'])
-def get_subscription(id, response: Response, db: Session = Depends(get_db)):
+async def get_subscription(id, response: Response, db: Session = Depends(get_db)):
     subscription = db.query(models.Subscription).filter(models.Subscription.id == id).first()
     if not subscription:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -41,10 +40,9 @@ def get_subscription(id, response: Response, db: Session = Depends(get_db)):
 
 # api to create a subscription
 @app.post('/subscription', status_code=status.HTTP_201_CREATED, tags=['subscriptions'])
-def create_subscription(request: schemas.Subscription, db: Session = Depends(get_db)):
+async def create_subscription(request: schemas.Subscription, db: Session = Depends(get_db)):
     new_subscription = models.Subscription(subscription_name=request.subscription_name,
-                                           subscription_price=request.subscription_price,
-                                           user_id=request.user_id)
+                                           subscription_price=request.subscription_price)
 # if we don't add and commit the query to the db it will not be added
     db.add(new_subscription)
     db.commit()
@@ -54,7 +52,7 @@ def create_subscription(request: schemas.Subscription, db: Session = Depends(get
 
 # this endpoint is for updating the specific subscription
 @app.put('/subscription/{id}', status_code=status.HTTP_200_OK, tags=['subscriptions'])
-def update_subscription(id, request: schemas.Subscription, db: Session = Depends(get_db)):
+async def update_subscription(id, request: schemas.Subscription, db: Session = Depends(get_db)):
     subscription = db.query(models.Subscription).filter(models.Subscription.id == id)
     if not subscription.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -66,7 +64,7 @@ def update_subscription(id, request: schemas.Subscription, db: Session = Depends
 
 # this is for deleting
 @app.delete('/subscription/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=['subscriptions'])
-def delete_subscription(id, db: Session = Depends(get_db)):
+async def delete_subscription(id, db: Session = Depends(get_db)):
     subscription = db.query(models.Subscription).filter(models.Subscription.id == id)
     if not subscription:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -78,14 +76,14 @@ def delete_subscription(id, db: Session = Depends(get_db)):
 
 # CRUD for Service model
 @app.get('/services', status_code=status.HTTP_200_OK, tags=['services'])
-def all_services(db: Session = Depends(get_db)):
+async def all_services(db: Session = Depends(get_db)):
     services = db.query(models.Service).all()
     return services
 
 
 # get specific service by id
 @app.get('/service/{id}', status_code=status.HTTP_200_OK, tags=['services'])
-def get_service(id, response: Response, db: Session = Depends(get_db)):
+async def get_service(id, response: Response, db: Session = Depends(get_db)):
     service = db.query(models.Service).filter(models.Service.id == id).first()
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -95,10 +93,9 @@ def get_service(id, response: Response, db: Session = Depends(get_db)):
 
 # create a new service
 @app.post('/service', status_code=status.HTTP_201_CREATED, tags=['services'])
-def create_service(request: schemas.Service, db: Session = Depends(get_db)):
+async def create_service(request: schemas.Service, db: Session = Depends(get_db)):
     new_service = models.Service(service_name=request.service_name,
-                                 service_price=request.service_price,
-                                 user_id=request.user_id)
+                                 service_price=request.service_price)
     db.add(new_service)
     db.commit()
     db.refresh(new_service)
@@ -107,7 +104,7 @@ def create_service(request: schemas.Service, db: Session = Depends(get_db)):
 
 # update the existing service
 @app.put('/service/{id}', status_code=status.HTTP_200_OK, tags=['services'])
-def update_service(id, request: schemas.Service, db: Session = Depends(get_db)):
+async def update_service(id, request: schemas.Service, db: Session = Depends(get_db)):
     service = db.query(models.Service).filter(models.Service.id == id)
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -119,7 +116,7 @@ def update_service(id, request: schemas.Service, db: Session = Depends(get_db)):
 
 # delete the service
 @app.delete('/service/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=['services'])
-def delete_service(id, db: Session = Depends(get_db)):
+async def delete_service(id, db: Session = Depends(get_db)):
     service = db.query(models.Service).filter(models.Service.id == id)
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -132,14 +129,14 @@ def delete_service(id, db: Session = Depends(get_db)):
 # CRUD for User model
 # to get all users
 @app.get('/users', status_code=status.HTTP_200_OK, tags=['users'])
-def all_users(db: Session = Depends(get_db)):
+async def all_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     return users
 
 
 # get specific user by id
 @app.get('/user/{id}', status_code=status.HTTP_200_OK, tags=['users'])
-def get_user(id, response: Response, db: Session = Depends(get_db)):
+async def get_user(id, response: Response, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -149,18 +146,26 @@ def get_user(id, response: Response, db: Session = Depends(get_db)):
 
 # create a new user
 @app.post('/user', status_code=status.HTTP_201_CREATED, tags=['users'])
-def create_user(request: schemas.User, db: Session = Depends(get_db)):
-    new_user = models.User(phone_number=request.phone_number,
-                           balance=request.balance)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+async def create_user(request: schemas.User, db: Session = Depends(get_db)):
+    subscription = db.query(models.Subscription).filter(models.Subscription.id == request.subscription_id).first()
+    if request.balance >= subscription.subscription_price:
+        new_balance = request.balance - subscription.subscription_price
+        new_user = models.User(phone_number=request.phone_number,
+                               balance=new_balance,
+                               subscription_id=request.subscription_id,
+                               service_id=request.service_id)
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return new_user
+    else:
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                            detail=f'{"You dont have enough balance"}')
 
 
 # update user
 @app.put('/user/{id}', status_code=status.HTTP_200_OK, tags=['users'])
-def update_user(id, request: schemas.User, db: Session = Depends(get_db)):
+async def update_user(id, request: schemas.User, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id)
     if not user.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -172,7 +177,7 @@ def update_user(id, request: schemas.User, db: Session = Depends(get_db)):
 
 # delete the user
 @app.delete('/user/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=['users'])
-def delete_user(id, db: Session = Depends(get_db)):
+async def delete_user(id, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
