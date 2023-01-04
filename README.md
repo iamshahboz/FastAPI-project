@@ -22,3 +22,17 @@ for windows
 http://localhost:8000/docs
 here you can find all availabe api for this project
 
+# Translations of some important words to Russian
+1) Subscription - Тариф
+2) Service - Услуга
+3) User - Пользователь
+
+# how to use endpoint
+# now the database is empty, so in order to work with endpoints you should add some data to that
+
+We have POST, PUT, GET, DELETE methods
+as the name defines POST-for creating, GET-for retrieving, PUT-for updating, DELETE-for deleting
+
+
+
+
