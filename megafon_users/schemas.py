@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import Float
 
 
@@ -12,29 +13,26 @@ By specifying Optional we say that this field is not required
 
 
 class User(BaseModel):
-    # id: int
     phone_number: int
-    balance: Optional[float] = 0.00
+    balance: float
+    subscription_id: int
+    service_id: int
 
     class Config:
         orm_mode = True
 
 
 class Subscription(BaseModel):
-    # id: int
     subscription_name: str
     subscription_price: float
-    user_id: int
 
     class Config:
         orm_mode = True
 
 
 class Service(BaseModel):
-    # id: int
     service_name: str
-    service_price: Optional[float] = Field(default=None)
-    user_id: int
+    service_price: float
 
     class Config:
         orm_mode = True
